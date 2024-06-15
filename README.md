@@ -113,22 +113,53 @@ DBN은 비지도 학습을 통한 주도적 학습 하에 데이터 간의 패�
 
 
 ## DBN 코드설명
-- 라이브러리 가져오기: 데이터 처리(numpy, pandas), 기계 학습 모델(scikit-learn) 및 딥 러닝(tensorflow)을 위한 필수 Python 라이브러리를 가져옵니다.
-- 데이터 세트 로드: 손으로 쓴 숫자의 28×28 픽셀 이미지 모음인 MNIST 데이터 세트는 scikit-learn의 fetch_openml을 사용하여 가져옵니다. 이 데이터 세트는 분류 알고리즘을 벤치마킹하는 데 일반적으로 사용됩니다.
-- 전처리: 데이터 세트는 train_test_split을 사용하여 훈련 세트와 테스트 세트로 분할됩니다. 그런 다음 StandardScaler를 사용하여 데이터의 크기를 조정하여 정규화하며, 이는 종종 신경망의 성능을 향상시킵니다.
-- RBM 레이어: 제한된 볼츠만 머신(RBM)은 지정된 수의 구성 요소와 학습 속도로 초기화됩니다. RBM은 입력을 재구성하여 데이터에서 패턴을 찾는 비지도 신경망입니다.
-- 분류기 레이어: 로지스틱 회귀 분류기가 최종 예측 레이어로 선택됩니다. 로지스틱 회귀는 분류 작업을 위한 간단하면서도 효과적인 선형 모델입니다.
-- DBN 파이프라인: RBM과 로지스틱 회귀 모델은 파이프라인으로 함께 연결됩니다. 이를 통해 RBM(특징 추출용)을 순차적으로 적용한 후 로지스틱 회귀(분류용)를 수행할 수 있습니다.
-- 훈련: DBN을 구성하는 파이프라인은 전처리된 훈련 데이터(X_train_scaled)에 대해 훈련됩니다. RBM은 로지스틱 회귀 모델에서 숫자를 분류하는 데 사용되는 기능을 학습합니다.
-- 평가: 마지막으로 훈련된 DBN의 성능이 테스트 세트에서 평가됩니다. 모델의 성능을 정량적으로 측정하기 위해 분류 정확도(dbn_score)가 인쇄됩니다.
-<img width="653" alt="사진3" src="https://github.com/danielyu123456/Project1/assets/170755250/45e64e02-8307-4c81-a001-1494826570d7">
+직접 코드를 돌려보았습니다.
 
-<img width="543" alt="사진4" src="https://github.com/danielyu123456/Project1/assets/170755250/53a715ba-5029-442a-9547-f68d6bc7a1d3">
+<img width="452" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/b3261939-f605-48a9-9ca6-75d6fd85af90">
 
+이 코드는 MNIST 데이터셋을 사용하여 딥 신뢰 네트워크(DBN)를 구현하는 과정을 보여줍니다. 여기에 대한 각 단계는 다음과 같습니다.
 
-출력에는 20회 반복을 통한 DBN(Deep Belief Network)의 훈련 진행 상황이 표시됩니다. 각 반복 중에 DBN의 RBM 부분은 데이터 구조를 이해하는 방법을 학습합니다. "의사 가능성"은 RBM이 데이터를 얼마나 잘 모델링하는지 추정하는 데 사용되는 척도입니다. 그러나 주어진 값은 음수이고 크기가 증가합니다. 이는 모델이 학습함에 따라 의사 가능성이 증가(또는 손실 감소)할 것으로 예상하므로 일반적으로 발생해서는 안 됩니다.
+<img width="288" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/a853df0e-d732-485b-8f7f-cfef6a0a1679">
 
-훈련 후 DBN은 약 21.14%의 분류 점수를 달성했습니다. 이 점수는 정확성을 측정하는 방법입니다. 이는 DBN이 테스트 데이터 세트에서 숫자 클래스를 21.14%의 시간 동안 정확하게 예측했음을 알려줍니다. 이는 매우 높은 점수가 아니며, 이는 모델이 이 작업에서 제대로 수행되지 않았음을 나타냅니다.
+필요한 모든 라이브러리들을 임포트합니다. 데이터 처리를 위한 numpy와 pandas, 데이터셋을 가져오기 위한 fetch_openml, 데이터 분할을 위한 train_test_split, 데이터 스케일링을 위한 StandardScaler, RBM 모델을 위한 BernoulliRBM, 파이프라인 생성을 위한 Pipeline, 그리고 로지스틱 회귀 모델을 위한 LogisticRegression 등이 포함됩니다.
+
+<img width="271" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/e1508b96-a203-4987-90d9-9dc30c61072f">
+
+MNIST 데이터셋을 fetch_openml 함수를 사용하여 가져옵니다. 이 데이터셋에는 손으로 쓴 숫자 이미지(28x28 픽셀)와 해당 이미지가 나타내는 숫자(0부터 9까지)가 포함되어 있습니다.
+
+<img width="291" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/41481780-64d8-40f4-ba16-1debf731500f">
+
+전체 데이터셋을 학습 세트와 테스트 세트로 분할합니다. 여기서는 데이터의 20%를 테스트 세트로 지정하고, ‘random_state’를 통해 재현 가능한 결과를 얻습니다.
+
+<img width="286" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/89eaa06b-13c5-425c-a871-ffef3b662a8f">
+
+데이터를 평균 0, 표준편차 1로 스케일링하여 전처리합니다. 이 과정은 RBM 모델의 성능을 향상시키기 위해 필요합니다.
+
+<img width="416" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/a038f448-05ea-4d6f-a3c3-a23706936158">
+
+‘BernoulliRBM’을 초기화합니다. 이 RBM 모델은 이진 입력 데이터에 대해 학습하며, 256개의 컴포넌트(은닉 유닛)를 가지고 있으며, 학습률은 0.01이고, 20번의 반복 동안 학습됩니다.
+
+<img width="402" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/9c5dc08c-72cf-49bb-96c3-efc129b8a3f7">
+
+‘LogisticRegression’을 초기화합니다. 이는 최종적으로 RBM에서 추출된 특징을 기반으로 데이터를 분류하는 모델입니다.
+
+<img width="452" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/ae0f091a-9cb6-4cc4-a581-86359f412f42">
+
+RBM과 로지스틱 회귀 모델을 순차적으로 실행하는 파이프라인을 생성합니다. 이를 통해 RBM이 데이터에서 특징을 추출하고, 이 추출된 특징을 로지스틱 회귀 모델이 사용하여 숫자를 분류할 수 있습니다.
+
+<img width="235" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/0e0eeaa0-20b8-4261-b17e-534666fe4d68">
+
+파이프라인을 사용하여 전처리된 학습 데이터(‘X_train_scaled’)로 DBN을 학습시킵니다.
+
+<img width="285" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/9ffe539a-2c7c-4180-9d1a-5cdf56fef03e">
+
+학습된 DBN 모델을 테스트 세트(‘X_test_scaled’)에서 평가하고, 분류 정확도(‘dbn_score’)를 출력하여 모델의 성능을 평가합니다.
+
+<img width="452" alt="image" src="https://github.com/danielyu123456/Project1/assets/170755250/20fdd306-343e-4c9b-815a-bda6ab5e6171">
+
+출력은 딥 신뢰 네트워크(DBN)가 20번의 반복(iteration) 동안 학습되는 과정을 보여줍니다. 각 반복 동안, DBN의 RBM(Restricted Boltzmann Machine) 부분이 데이터의 구조를 이해하도록 학습합니다. "유사 가능도(pseudo-likelihood)"는 RBM이 데이터를 얼마나 잘 모델링하고 있는지를 추정하는 데 사용되는 척도입니다. 그러나 주어진 값들이 음수이고 그 크기가 증가하고 있는데, 이는 일반적으로 발생하지 않아야 합니다. 모델이 학습함에 따라 유사 가능도가 증가하거나 손실이 감소하는 것이 일반적이기 때문입니다.
+
+학습이 완료된 후, DBN은 21.2%의 분류 점수를 기록합니다. 이 점수는 정확도를 측정하는 방법 중 하나로, 테스트 데이터셋에서 DBN이 숫자 클래스를 올바르게 예측한 비율이 21.2%임을 의미합니다. 이는 매우 높은 점수가 아니며, 모델이 이 작업에서 잘 수행되지 않았음을 시사합니다.
 
 
 
@@ -147,3 +178,4 @@ DBN은 비지도 학습을 통한 주도적 학습 하에 데이터 간의 패�
 - 비지도학습 - 비지도 학습(Unsupervised Learning) 이해를 돕는 심플 가이드 (appier.com) https://www.appier.com/ko-kr/blog/a-simple-guide-to-unsupervised-learning
 - DBN 적용사례 - 이미지 인식: Hinton, G. E., Osindero, S., & Teh, Y. W. (2006). A fast learning algorithm for deep belief nets. Neural Computation, 18(7), 1527-1554 / 음성 인식: Mohamed, A., Dahl, G. E., & Hinton, G. (2012). Acoustic modeling using deep belief networks. IEEE Transactions on Audio, Speech, and Language Processing, 20(1), 14-22 / 의료 데이터 분석: Miotto, R., Wang, F., Wang, S., Jiang, X., & Dudley, J. T. (2016). Deep learning for healthcare: review, opportunities and challenges. Briefings in Bioinformatics, 19(6), 1236-1246 / 금융 데이터 분석: Dixon, M. F., Klabjan, D., & Bang, J. H. (2016). Classification-based financial markets prediction using deep neural networks. Algorithmic Finance, 5(3-4), 1-10 / 추천 시스템: Salakhutdinov, R., Mnih, A., & Hinton, G. (2007). Restricted Boltzmann machines for collaborative filtering. Proceedings of the 24th International Conference on Machine Learning, 791-798 / 추가내용: [Here’s Everything You Need To Know About Deep Belief Network (inc42.com)](https://inc42.com/glossary/deep-belief-networks/) / [Neural Network and Deep Belief Network | Baeldung on Computer Science](https://www.baeldung.com/cs/deep-belief-network)
 - Deep Belief Network 하이브리드 - 첫번째 연구: https://aircconline.com/mlaij/V8N3/8321mlaij04.pdf / 두번째 연구: https://www.mdpi.com/2313-433X/10/6/132
+- DBN 코드설명 - https://www.geeksforgeeks.org/deep-belief-network-dbn-in-deep-learning/
